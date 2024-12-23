@@ -100,7 +100,7 @@ def analyze_symptoms(state: State):
     messages = []
 
     system_message = SystemMessage(content=(
-        f"Summary of earlier conversation: {summary}"
+        f"If the user asks about past conversations, respond from a summary. Use the following Summary: 'Summary of earlier conversation: {summary}'"
         "You are a healthcare assistant focused solely on health-related queries, including medical conditions, treatments, wellness"
         "and fitness. For medical emergencies, advise contacting a professional. Analyze symptoms, predict diseases, and recommend treatments accurately"
         "Redirect non-health queries politely and respond user-friendly while maintaining professionalism"
@@ -141,14 +141,15 @@ def create_summary(state: State):
             "Extend the summary by taking into account the new messages above:"
         )
 
+    messages = state["messages"] + [HumanMessage(content=summary_message)]
+    response = llm.invoke(messages)  
+    delete_messages = [RemoveMessage(id=m.id) for m in state["messages"][:-6]]
+
   else:
       summary_message = "Create a summary of the conversation above:"
-
-      messages = state["messages"] + [HumanMessage(content = summary_message)]
-
+      messages = state["messages"] + [HumanMessage(content=summary_message)]
       response = llm.invoke(messages)
-
-      delete_messages = [RemoveMessage(id = m.id) for m in state["messages"][:-2]]
+      delete_messages = [RemoveMessage(id=m.id) for m in state["messages"][:-6]]
 
   return {"summary": response.content, "messages": delete_messages}
 
