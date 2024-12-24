@@ -35,7 +35,6 @@ def schedule_appointment(
     scopes = ["https://www.googleapis.com/auth/calendar"]
 
     TOKEN_PATH = './token.json'
-    
     credentials_file = './credentials.json'
 
     creds = None
@@ -100,7 +99,7 @@ def analyze_symptoms(state: State):
     messages = []
 
     system_message = SystemMessage(content=(
-        f"If the user asks about past conversations, respond from a summary. Use the following Summary: 'Summary of earlier conversation: {summary}'"
+        f"If the user asks about past conversations, Use the following:'Summary of earlier conversation: {summary}'"
         "You are a healthcare assistant focused solely on health-related queries, including medical conditions, treatments, wellness"
         "and fitness. For medical emergencies, advise contacting a professional. Analyze symptoms, predict diseases, and recommend treatments accurately"
         "Redirect non-health queries politely and respond user-friendly while maintaining professionalism"
@@ -108,8 +107,8 @@ def analyze_symptoms(state: State):
         "Follow a structured workflow to ensure clarity and professionalism while creating summaries, locations, and descriptions for schedule_appointment"
         "**set schedule_appointment**: "
         "- Once you have all the required information, call the tool `schedule_appointment` with the following parameters: "
-        "- `summary`: Generated from the conversation context."
-        "- `location`: Generated from the conversation context."
+        "- `summary`: get from user."
+        "- `location`: get from user."
         "- `description`: Generated from the conversation context."
         "- `start_datetime`: The formatted start date and time."
         "- `end_datetime`: 1 hour after the start date and time."
@@ -121,6 +120,8 @@ def analyze_symptoms(state: State):
         "- Assistant: *Converts to ISO format:`2024-12-22T15:00:00+00:00` and calculates `end_datetime` as `2024-12-22T16:00:00+00:00`. "
         "- Assistant: 'Please provide the email address of the attendee(s).' "
         "- User: 'example@gmail.com.' "
+        "- Assistant: *is this information correct ?*"
+        "- User: 'yes'."
         "- Assistant: *Calls the tool `schedule_appointment` with the gathered information.*"))
 
     messages.insert(0, system_message)
@@ -142,7 +143,7 @@ def create_summary(state: State):
         )
 
     messages = state["messages"] + [HumanMessage(content=summary_message)]
-    response = llm.invoke(messages)  
+    response = llm.invoke(messages)
     delete_messages = [RemoveMessage(id=m.id) for m in state["messages"][:-6]]
 
   else:
